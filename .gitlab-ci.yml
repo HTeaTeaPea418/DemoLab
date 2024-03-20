@@ -74,10 +74,21 @@ create_image:
     - pip install -r requirements.txt
     - python ./imager.py
 
-cleanup:
+# a YAML anchor reduces repetition https://stackoverflow.com/questions/64205410/gitlab-ci-specify-that-job-c-should-run-after-job-b-if-job-a-fails
+.cleanup_job: &cleanup_job
   stage: cleanup
-  #when: manual
   script:
     - cd terraform
     - terraform workspace select imager
     - terraform destroy --auto-approve --var ENVIRONMENT=staging
+
+cleanup_build_success:
+  stage: cleanup
+  needs: ["deploy"]
+  when: on_failure
+  <<: *cleanup_job
+
+cleanup_build_failed:
+  stage: cleanup
+  when: on_success
+  <<: *cleanup_job
