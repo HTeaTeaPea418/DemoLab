@@ -31,7 +31,7 @@ variable "MANAGEMENT_IPS" {
 }
 
 variable "SSM_S3_BUCKET" {
-  default = "yourbucketgoeshere"
+  default = "adlab_storage"
 }
 
 variable "ENVIRONMENT" {
