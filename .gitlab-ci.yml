@@ -35,7 +35,7 @@ validate_terraform:
 
 deploy:
   stage: converge
-  when: manual
+  #when: manual
   script:
     - cd terraform
     - terraform init 
@@ -53,10 +53,10 @@ inspec:
   before_script:
     - mkdir -p /etc/chef/accepted_licenses/
     - echo > /etc/chef/accepted_licenses/inspec
-    - apk add ruby ruby-dev gcc g++ make jq ruby-bundler ruby-webrick ruby-etc python python-dev py-pip
+    - apk add ruby ruby-dev gcc g++ make jq ruby-bundler ruby-webrick ruby-etc python3 python3-dev py3-pip
     - gem install inspec inspec-bin bigdecimal
   stage: test
-  when: manual
+  #when: manual
   allow_failure: true
   dependencies:
     - deploy
@@ -66,7 +66,7 @@ inspec:
 create_image:
   image: python:3
   stage: image
-  when: manual
+  #when: manual
   before_script:
     - cd .
   script:
@@ -76,7 +76,7 @@ create_image:
 
 cleanup:
   stage: cleanup
-  when: manual
+  #when: manual
   script:
     - cd terraform
     - terraform workspace select imager
