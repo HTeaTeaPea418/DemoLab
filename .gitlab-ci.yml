@@ -21,7 +21,7 @@ before_script:
 
 stages:
   - validate
-  - converge
+  - deploy
   - test
   - image
   - cleanup
@@ -35,7 +35,7 @@ validate_terraform:
     - terraform validate
 
 deploy:
-  stage: converge
+  stage: deploy
   #when: manual
   script:
     - cd terraform
@@ -95,5 +95,11 @@ cleanup_build_success:
 cleanup_build_failed:
   stage: cleanup
   needs: ["deploy"]
+  when: on_failure
+  <<: *cleanup_job
+
+cleanup_inspec_failed:
+  stage: cleanup
+  needs: ["inspec"]
   when: on_failure
   <<: *cleanup_job
