@@ -30,6 +30,7 @@ stages:
 
 validate_terraform:
   stage: validate
+  when: manual #TESTING - REMOVE FOR PROD
   script:
     - cd terraform
     - terraform init 
