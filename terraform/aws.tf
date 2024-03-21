@@ -225,7 +225,7 @@ resource "aws_s3_bucket" "ssm_bucket" {
 
 # Add first.local MOF's to S3
 resource "aws_s3_bucket_object" "first-dc-mof" {
-  bucket     = var.SSM_S3_BUCKET
+  bucket     = aws_s3_bucket.ssm_bucket.id
   count      = var.ENVIRONMENT == "deploy" ? 0 : 1
   key        = "Lab/First.mof"
   source     = "../dsc/Lab/First.mof"
@@ -234,7 +234,7 @@ resource "aws_s3_bucket_object" "first-dc-mof" {
 
 # Add second.local MOF's to S3
 resource "aws_s3_bucket_object" "second-dc-mof" {
-  bucket     = var.SSM_S3_BUCKET
+  bucket     = aws_s3_bucket.ssm_bucket.id
   count      = var.ENVIRONMENT == "deploy" ? 0 : 1
   key        = "Lab/Second.mof"
   source     = "../dsc/Lab/Second.mof"
