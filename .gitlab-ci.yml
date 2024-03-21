@@ -13,8 +13,6 @@ variables:
 cache:
   paths:
     - terraform/.terraform/plugins
-    - terraform/.terraform
-    - terraform/.terraform.lock.hcl
 
 before_script:
   - terraform --version
@@ -47,8 +45,12 @@ deploy:
     - terraform output --json > output.json
   artifacts:
     when: always
+    # We need to cache some files to avoid errors when it comes to tearing down our infra. 
+    # Due to the way TF works, it relies on various state files, which we need to cache from stage to stage!
+    # https://stackoverflow.com/a/73780145
     paths:
       - $CI_PROJECT_DIR/terraform/terraform.tfstate.d
+      - $CI_PROJECT_DIR/terraform/.terraform.lock.hcl
       - $CI_PROJECT_DIR/terraform/output.json
     expire_in: 1 week
 
@@ -77,7 +79,9 @@ create_image:
     - pip install -r requirements.txt
     - python ./imager.py
 
-# a YAML anchor reduces repetition https://stackoverflow.com/questions/64205410/gitlab-ci-specify-that-job-c-should-run-after-job-b-if-job-a-fails
+# Lets make a re-usable piece of code to clean up all artefacts from this pipeline
+# This means it will delete all of the infra regardless of success or failure.
+# https://stackoverflow.com/questions/64205410/gitlab-ci-specify-that-job-c-should-run-after-job-b-if-job-a-fails
 .cleanup_job: &cleanup_job
   stage: cleanup
   script:
