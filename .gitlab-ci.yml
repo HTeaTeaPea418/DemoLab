@@ -40,7 +40,6 @@ deploy:
   script:
     - cd terraform
     - terraform init 
-    - terraform workspace new imager 
     - terraform apply --auto-approve --var ENVIRONMENT=staging
     - terraform output --json > output.json
   artifacts:
@@ -86,7 +85,6 @@ create_image:
   stage: cleanup
   script:
     - cd terraform
-    - terraform workspace select imager
     - terraform destroy --auto-approve --var ENVIRONMENT=staging
 
 cleanup_build_success:
