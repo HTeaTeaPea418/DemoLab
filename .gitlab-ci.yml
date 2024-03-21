@@ -13,6 +13,8 @@ variables:
 cache:
   paths:
     - terraform/.terraform/plugins
+    - terraform/.terraform
+    - terraform/.terraform.lock.hcl
 
 before_script:
   - terraform --version
@@ -84,11 +86,11 @@ create_image:
 
 cleanup_build_success:
   stage: cleanup
-  needs: ["deploy"]
-  when: on_failure
+  when: on_success
   <<: *cleanup_job
 
 cleanup_build_failed:
   stage: cleanup
-  when: on_success
+  needs: ["deploy"]
+  when: on_failure
   <<: *cleanup_job
