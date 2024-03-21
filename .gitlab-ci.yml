@@ -57,7 +57,7 @@ inspec:
   before_script:
     - mkdir -p /etc/chef/accepted_licenses/
     - echo > /etc/chef/accepted_licenses/inspec
-    - apk add ruby ruby-dev gcc g++ make jq ruby-bundler ruby-webrick ruby-etc python3 python3-dev py3-pip
+    - apk add ruby ruby-dev gcc g++ make jq ruby-bundler ruby-webrick ruby-etc python3 python3-dev py3-pip linux-headers
     - gem install inspec inspec-bin bigdecimal
   stage: test
   #when: manual
