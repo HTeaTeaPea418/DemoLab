@@ -218,6 +218,11 @@ resource "aws_security_group" "second-sg" {
   }
 }
 
+# Create bucket
+resource "aws_s3_bucket" "ssm_bucket" {
+  bucket_prefix = var.SSM_S3_BUCKET
+}
+
 # Add first.local MOF's to S3
 resource "aws_s3_bucket_object" "first-dc-mof" {
   bucket     = var.SSM_S3_BUCKET
