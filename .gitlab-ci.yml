@@ -1,3 +1,6 @@
+before_script:
+  - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+
 image:
   name: registry.hub.docker.com/http418infosec/adlab:latest
   entrypoint:
