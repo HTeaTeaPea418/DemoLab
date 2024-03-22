@@ -2,7 +2,7 @@ before_script:
   - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
 
 image:
-  name: registry.hub.docker.com/http418infosec/adlab:latest
+  name: http418infosec/adlab:latest
   entrypoint:
     - '/usr/bin/env'
     - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
