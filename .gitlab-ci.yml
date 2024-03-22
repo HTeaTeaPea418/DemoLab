@@ -1,5 +1,5 @@
 before_script:
-  - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+  - docker login docker.com -u $DOCKER_USER -p $DOCKER_PASS
 
 image:
   name: http418infosec/adlab:latest
