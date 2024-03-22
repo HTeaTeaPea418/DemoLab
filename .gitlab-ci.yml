@@ -1,5 +1,5 @@
 image:
-  name: docker.com/http418infosec/adlab:latest
+  name: registry.hub.docker.com/http418infosec/adlab:latest
   entrypoint:
     - '/usr/bin/env'
     - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
