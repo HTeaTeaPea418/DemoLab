@@ -16,8 +16,8 @@ cache:
 
 before_script:
   - terraform --version
-  - apk add --update python3 python3-dev py3-pip jq gcc g++ make 
-  - pip install awscli
+  - apk add --update python3 python3-dev py3-pip pipx jq gcc g++ make 
+  - pipx install awscli
 
 stages:
   - validate
