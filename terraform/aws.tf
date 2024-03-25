@@ -260,7 +260,7 @@ resource "aws_s3_object" "second-dc-mof" {
 }
 # Add userserver MOF's to S3
 resource "aws_s3_bucket_object" "user-server-mof" {
-  bucket     = var.SSM_S3_BUCKET
+  bucket     = aws_s3_bucket.ssm_bucket.id
   key        = "Lab/UserServer.mof"
   source     = "../dsc/Lab/UserServer.mof"
   etag       = filemd5("../dsc/Lab/UserServer.mof")
@@ -271,6 +271,7 @@ resource "aws_ssm_parameter" "admin-ssm-parameter" {
   name  = "admin"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"admin\", \"Password\":\"Password@1\"}"
 }
 
@@ -278,6 +279,8 @@ resource "aws_ssm_parameter" "local-user-ssm-parameter" {
   name  = "local-user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
+  overwrite = true
   value = "{\"Username\":\"local-user\", \"Password\":\"Password@1\"}"
 }
 
@@ -285,6 +288,7 @@ resource "aws_ssm_parameter" "first-admin-ssm-parameter" {
   name  = "first-admin"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"first.local\\\\admin\", \"Password\":\"Password@1\"}"
 }
 
@@ -299,6 +303,7 @@ resource "aws_ssm_parameter" "dnsadmin-user-ssm-parameter" {
   name  = "dnsadmin.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"dnsadmin.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -306,6 +311,7 @@ resource "aws_ssm_parameter" "unconstrainer-user-ssm-parameter" {
   name  = "unconstrained.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"unconstrained.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -313,6 +319,7 @@ resource "aws_ssm_parameter" "constrained-user-ssm-parameter" {
   name  = "constrained.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"constrained.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -320,6 +327,7 @@ resource "aws_ssm_parameter" "userwrite-user-ssm-parameter" {
   name  = "userwrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"userwrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -327,6 +335,7 @@ resource "aws_ssm_parameter" "userall-user-ssm-parameter" {
   name  = "userall.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"userall.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -334,6 +343,7 @@ resource "aws_ssm_parameter" "compwrite-user-ssm-parameter" {
   name  = "compwrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"compwrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -341,6 +351,7 @@ resource "aws_ssm_parameter" "gpowrite-user-ssm-parameter" {
   name  = "gpowrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"gpowrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -348,6 +359,7 @@ resource "aws_ssm_parameter" "lapsread-user-ssm-parameter" {
   name  = "lapsread.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"lapsread.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -355,6 +367,7 @@ resource "aws_ssm_parameter" "groupwrite-user-ssm-parameter" {
   name  = "groupwrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"groupwrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -362,6 +375,7 @@ resource "aws_ssm_parameter" "writedacldc-user-ssm-parameter" {
   name  = "writedacldc.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"writedacldc.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -369,6 +383,7 @@ resource "aws_ssm_parameter" "readgmsa-user-ssm-parameter" {
   name  = "readgmsa.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"readgmsa.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -376,6 +391,7 @@ resource "aws_ssm_parameter" "clearpass-user-ssm-parameter" {
   name  = "clearpass.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"clearpass.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -383,6 +399,7 @@ resource "aws_ssm_parameter" "dcsync-user-ssm-parameter" {
   name  = "dcsync.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"dcsync.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -390,6 +407,7 @@ resource "aws_ssm_parameter" "roast-user-ssm-parameter" {
   name  = "roast.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"roast.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -397,6 +415,7 @@ resource "aws_ssm_parameter" "asrep-user-ssm-parameter" {
   name  = "asrep.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"asrep.user\", \"Password\":\"Password@1\"}"
 }
 
