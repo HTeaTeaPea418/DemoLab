@@ -280,7 +280,6 @@ resource "aws_ssm_parameter" "local-user-ssm-parameter" {
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
   overwrite = true
-  overwrite = true
   value = "{\"Username\":\"local-user\", \"Password\":\"Password@1\"}"
 }
 
@@ -295,7 +294,8 @@ resource "aws_ssm_parameter" "first-admin-ssm-parameter" {
 resource "aws_ssm_parameter" "regular-user-ssm-parameter" {
   name  = "regular.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
-    type  = "SecureString"
+  type  = "SecureString"
+  overwrite = true
   value = "{\"Username\":\"regular.user\", \"Password\":\"Password@1\"}"
 }
 
