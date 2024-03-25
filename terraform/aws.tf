@@ -259,7 +259,7 @@ resource "aws_s3_object" "second-dc-mof" {
   etag       = filemd5("../dsc/Lab/Second.mof")
 }
 # Add userserver MOF's to S3
-resource "aws_s3_bucket_object" "user-server-mof" {
+resource "aws_s3_object" "user-server-mof" {
   bucket     = aws_s3_bucket.ssm_bucket.id
   key        = "Lab/UserServer.mof"
   source     = "../dsc/Lab/UserServer.mof"
