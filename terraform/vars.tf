@@ -2,6 +2,12 @@ variable "PATH_TO_PUBLIC_KEY" {
   default = "./keys/terraformkey.pub"
 }
 
+variable "PATH_TO_PRIVATE_KEY" {
+  # Add the path to the private key you made in AWS like below
+  # default = "./keys/terraform-key.pem"
+  default = "YOUR_PRIVATE_KEY"
+}
+
 variable "VPC_CIDR" {
   default = "10.0.0.0/16"
 }
@@ -16,6 +22,10 @@ variable "SECOND_SUBNET_CIDR" {
 
 variable "FIRST_DC_IP" {
   default = "10.0.1.100"
+}
+
+variable "USER_SERVER_IP" {
+  default = "10.0.1.50"
 }
 
 variable "SECOND_DC_IP" {
