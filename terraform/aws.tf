@@ -101,7 +101,7 @@ resource "aws_instance" "user-server" {
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.first-vpc-subnet.id
   private_ip                  = var.USER_SERVER_IP
-  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.0.name
 
   tags = {
     Workspace = "${terraform.workspace}"
