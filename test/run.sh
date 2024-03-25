@@ -1,7 +1,7 @@
 #!/bin/sh
 
 USER='admin'
-PASS='Password@1'
+PASS='DoesntMatter'
 
 FIRST_DC_IP=$(cat ../terraform/output.json| jq -r '.["first-dc_ip"].value')
 SECOND_DC_IP=$(cat ../terraform/output.json| jq -r '.["second-dc_ip"].value')
