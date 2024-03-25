@@ -89,7 +89,9 @@ create_image:
     # For some reason, TF wont always clear up some of these items correctly, so lets manually define them here to avoid build errors
     - aws iam remove-role-from-instance-profile --instance-profile-name imager_ssm_instance_profile --role-name imager_ssm_role_default
     - aws iam delete-instance-profile --instance-profile-name imager_ssm_instance_profile
+    - aws iam detach-role-policy --role-name imager_ssm_role_default --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
     - aws ec2 delete-key-pair --key-name imager-terraform-lab
+
 
 
 cleanup_build_success:
