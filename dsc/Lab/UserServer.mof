@@ -1,0 +1,188 @@
+/*
+@TargetNode='UserServer'
+@GeneratedBy=Ben
+@GenerationDate=03/25/2024 15:19:11
+@GenerationHost=DESKTOP-3O2T2EO
+*/
+
+instance of MSFT_WaitForAll as $MSFT_WaitForAll1ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::558::9::WaitForAll";
+ ResourceName = "[ADUser]asrep";
+ NodeName = {
+    "First-DC"
+};
+ RetryCount = 15;
+ RetryIntervalSec = 60;
+ ResourceID = "[WaitForAll]DC";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "0.0";
+ ConfigurationName = "Lab";
+};
+instance of DSC_FirewallProfile as $DSC_FirewallProfile1ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::566::9::FirewallProfile";
+ ModuleVersion = "9.0.0";
+ ModuleName = "NetworkingDsc";
+ Enabled = "False";
+ ResourceID = "[FirewallProfile]DisablePublic";
+ Name = "Public";
+ ConfigurationName = "Lab";
+};
+instance of DSC_FirewallProfile as $DSC_FirewallProfile2ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::571::9::FirewallProfile";
+ ModuleVersion = "9.0.0";
+ ModuleName = "NetworkingDsc";
+ Enabled = "False";
+ ResourceID = "[FirewallProfile]DisablePrivate";
+ Name = "Private";
+ ConfigurationName = "Lab";
+};
+instance of DSC_FirewallProfile as $DSC_FirewallProfile3ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::576::9::FirewallProfile";
+ ModuleVersion = "9.0.0";
+ ModuleName = "NetworkingDsc";
+ Enabled = "False";
+ ResourceID = "[FirewallProfile]DisableDomain";
+ Name = "Domain";
+ ConfigurationName = "Lab";
+};
+instance of MSFT_Credential as $MSFT_Credential1ref
+{
+Password = "DoesntMatter";
+ UserName = "admin";
+
+};
+
+instance of MSFT_UserResource as $MSFT_UserResource1ref
+{
+Password = $MSFT_Credential1ref;
+ SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::581::9::User";
+ UserName = "local-user";
+ ResourceID = "[User]localuser";
+ ModuleName = "PsDesiredStateConfiguration";
+ Ensure = "Present";
+
+ModuleVersion = "0.0";
+ ConfigurationName = "Lab";
+};
+instance of MSFT_GroupResource as $MSFT_GroupResource1ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::587::9::Group";
+ GroupName = "Administrators";
+ MembersToInclude = {
+    "local-user"
+};
+ ResourceID = "[Group]Administrators";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "0.0";
+DependsOn = {
+    "[User]localuser"};
+ ConfigurationName = "Lab";
+};
+instance of DSC_DnsServerAddress as $DSC_DnsServerAddress1ref
+{
+Validate = False;
+ SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::593::9::DnsServerAddress";
+ ModuleVersion = "9.0.0";
+ AddressFamily = "IPv4";
+ Address = {
+    "10.0.1.100"
+};
+ InterfaceAlias = "Ethernet";
+ ResourceID = "[DnsServerAddress]DnsServerAddress";
+ ModuleName = "NetworkingDsc";
+
+DependsOn = {
+    "[Group]Administrators"};
+ ConfigurationName = "Lab";
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource1ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::602::9::Script";
+ TestScript = "\n                Test-Path \"C:\\Windows\\Temp\\DefenderDisable.txt\"\n            ";
+ ResourceID = "[Script]DisableDefender";
+ ModuleName = "PsDesiredStateConfiguration";
+ GetScript = " \n                return @{ Result = (Get-Content C:\\Windows\\Temp\\DefenderDisable.txt) } \n            ";
+ SetScript = "\n                Uninstall-WindowsFeature -Name Windows-Defender\n                $sw = New-Object System.IO.StreamWriter(\"C:\\Windows\\Temp\\DefenderDisable.txt\")\n                $sw.WriteLine(\"Defender has been uninstalled\")\n                $sw.Close()\n            ";
+
+ModuleVersion = "0.0";
+ ConfigurationName = "Lab";
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource2ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::620::9::Script";
+ TestScript = "\n                $false\n            ";
+ ResourceID = "[Script]DisableSMBSign";
+ ModuleName = "PsDesiredStateConfiguration";
+ GetScript = " \n                return @{ } \n            ";
+ SetScript = "\n                Set-SmbClientConfiguration -RequireSecuritySignature 0 -EnableSecuritySignature 0 -Confirm -Force\n            ";
+
+ModuleVersion = "0.0";
+ ConfigurationName = "Lab";
+};
+instance of MSFT_Credential as $MSFT_Credential2ref
+{
+Password = "DoesntMatter";
+ UserName = "first-admin";
+
+};
+
+instance of MSFT_WaitForADDomain as $MSFT_WaitForADDomain1ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::635::9::WaitForADDomain";
+ WaitTimeout = 300;
+ ModuleVersion = "6.4.0";
+ WaitForValidCredentials = True;
+ ResourceID = "[WaitForADDomain]waitFirstDomain";
+ ModuleName = "ActiveDirectoryDsc";
+ DomainName = "first.local";
+ Credential = $MSFT_Credential2ref;
+
+DependsOn = {
+    "[DnsServerAddress]DnsServerAddress"};
+ ConfigurationName = "Lab";
+};
+instance of MSFT_Credential as $MSFT_Credential3ref
+{
+Password = "DoesntMatter";
+ UserName = "first-admin";
+
+};
+
+instance of DSC_Computer as $DSC_Computer1ref
+{
+SourceInfo = "C:\\Users\\Ben\\Documents\\GitHub\\DemoLab\\dsc\\labdsc.ps1::643::9::Computer";
+ ModuleVersion = "9.0.0";
+ ModuleName = "ComputerManagementDsc";
+ ResourceID = "[Computer]JoinDomain";
+ Name = "User-Server";
+ DomainName = "first.local";
+ Credential = $MSFT_Credential3ref;
+
+DependsOn = {
+    "[WaitForADDomain]waitFirstDomain"};
+ ConfigurationName = "Lab";
+};
+instance of OMI_ConfigurationDocument
+
+                    {
+ Version="2.0.0";
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+                        Author="Ben";
+
+                        GenerationDate="03/25/2024 15:19:11";
+
+                        GenerationHost="DESKTOP-3O2T2EO";
+
+                        Name="Lab";
+
+                    };
