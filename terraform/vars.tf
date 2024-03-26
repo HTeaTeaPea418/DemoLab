@@ -37,7 +37,7 @@ variable "PUBLIC_DNS" {
 }
 
 variable "MANAGEMENT_IPS" {
-  default = ["1.2.3.4/32"]
+  default = []
 }
 
 variable "SSM_S3_BUCKET" {
@@ -46,6 +46,14 @@ variable "SSM_S3_BUCKET" {
 
 variable "ENVIRONMENT" {
   default = "deploy"
+}
+
+variable "DC_VM_SIZE" {
+  default = "t2.medium"
+}
+
+variable "SERVER_VM_SIZE" {
+  default = "t2.small"
 }
 
 data "aws_ami" "latest-windows-server" {
@@ -76,4 +84,8 @@ data "aws_ami" "second-dc" {
     name   = "name"
     values = ["*-Second-DC*"]
   }
+}
+
+data "http" "myip" {
+  url = "https://ipv4.icanhazip.com"
 }

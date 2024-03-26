@@ -5,6 +5,10 @@ provider "aws" {
   secret_key = ""
 }
 
+locals {
+  management_ips = concat(var.MANAGEMENT_IPS, formatlist("${chomp(data.http.myip.response_body)}/32"))
+}
+
 # Our AWS keypair
 resource "aws_key_pair" "terraformkey" {
   key_name   = "${terraform.workspace}-terraform-lab"
@@ -76,7 +80,7 @@ resource "aws_vpc_dhcp_options_association" "first-dhcp-assoc" {
 # Our first domain controller of the "first.local" domain
 resource "aws_instance" "first-dc" {
   ami                         = var.ENVIRONMENT == "deploy" ? data.aws_ami.first-dc.0.image_id : data.aws_ami.latest-windows-server.image_id
-  instance_type               = "t2.small"
+  instance_type               = var.DC_VM_SIZE
   key_name                    = aws_key_pair.terraformkey.key_name
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.first-vpc-subnet.id
@@ -93,30 +97,10 @@ resource "aws_instance" "first-dc" {
   ]
 }
 
-# The User server which will be main foothold
-resource "aws_instance" "user-server" {
-  ami                         = data.aws_ami.latest-windows-server.image_id
-  instance_type               = "t2.small"
-  key_name                    = aws_key_pair.terraformkey.key_name
-  associate_public_ip_address = true
-  subnet_id                   = aws_subnet.first-vpc-subnet.id
-  private_ip                  = var.USER_SERVER_IP
-  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.0.name
-
-  tags = {
-    Workspace = "${terraform.workspace}"
-    Name      = "${terraform.workspace}-User-Server"
-  }
-
-  vpc_security_group_ids = [
-    aws_security_group.first-sg.id,
-  ]
-}
-
 # Our second domain controller of the "second.local" domain
 resource "aws_instance" "second-dc" {
   ami                         = var.ENVIRONMENT == "deploy" ? data.aws_ami.second-dc.0.image_id : data.aws_ami.latest-windows-server.image_id
-  instance_type               = "t2.small"
+  instance_type               = var.DC_VM_SIZE
   key_name                    = aws_key_pair.terraformkey.key_name
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.second-vpc-subnet.id
@@ -130,6 +114,26 @@ resource "aws_instance" "second-dc" {
 
   vpc_security_group_ids = [
     aws_security_group.second-sg.id,
+  ]
+}
+
+# The User server which will be main foothold
+resource "aws_instance" "user-server" {
+  ami                         = data.aws_ami.latest-windows-server.image_id
+  instance_type               = var.SERVER_VM_SIZE
+  key_name                    = aws_key_pair.terraformkey.key_name
+  associate_public_ip_address = true
+  subnet_id                   = aws_subnet.first-vpc-subnet.id
+  private_ip                  = var.USER_SERVER_IP
+  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.0.name
+
+  tags = {
+    Workspace = "${terraform.workspace}"
+    Name      = "${terraform.workspace}-User-Server"
+  }
+
+  vpc_security_group_ids = [
+    aws_security_group.first-sg.id,
   ]
 }
 
@@ -169,6 +173,7 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
 # Security group for first.local
 resource "aws_security_group" "first-sg" {
   vpc_id = aws_vpc.lab-vpc.id
+  name = "SG for first.local"
 
   # Allow second zone to first
   ingress {
@@ -188,7 +193,7 @@ resource "aws_security_group" "first-sg" {
   # Allow management from our IP
   ingress {
     protocol    = "-1"
-    cidr_blocks = var.MANAGEMENT_IPS
+    cidr_blocks = local.management_ips
     from_port   = 0
     to_port     = 0
   }
@@ -205,6 +210,7 @@ resource "aws_security_group" "first-sg" {
 # Security group for second.local
 resource "aws_security_group" "second-sg" {
   vpc_id = aws_vpc.lab-vpc.id
+  name = "SG for second.local"
 
   # Allow secure zone to first
   ingress {
@@ -224,7 +230,7 @@ resource "aws_security_group" "second-sg" {
   # Allow management from Our IP
   ingress {
     protocol    = "-1"
-    cidr_blocks = var.MANAGEMENT_IPS
+    cidr_blocks = local.management_ips
     from_port   = 0
     to_port     = 0
   }
@@ -271,7 +277,6 @@ resource "aws_ssm_parameter" "admin-ssm-parameter" {
   name  = "admin"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"admin\", \"Password\":\"Password@1\"}"
 }
 
@@ -279,7 +284,6 @@ resource "aws_ssm_parameter" "local-user-ssm-parameter" {
   name  = "local-user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"local-user\", \"Password\":\"Password@1\"}"
 }
 
@@ -287,7 +291,6 @@ resource "aws_ssm_parameter" "first-admin-ssm-parameter" {
   name  = "first-admin"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"first.local\\\\admin\", \"Password\":\"Password@1\"}"
 }
 
@@ -295,7 +298,6 @@ resource "aws_ssm_parameter" "regular-user-ssm-parameter" {
   name  = "regular.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"regular.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -303,7 +305,6 @@ resource "aws_ssm_parameter" "dnsadmin-user-ssm-parameter" {
   name  = "dnsadmin.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"dnsadmin.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -311,7 +312,6 @@ resource "aws_ssm_parameter" "unconstrainer-user-ssm-parameter" {
   name  = "unconstrained.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"unconstrained.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -319,7 +319,6 @@ resource "aws_ssm_parameter" "constrained-user-ssm-parameter" {
   name  = "constrained.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"constrained.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -327,7 +326,6 @@ resource "aws_ssm_parameter" "userwrite-user-ssm-parameter" {
   name  = "userwrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"userwrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -335,7 +333,6 @@ resource "aws_ssm_parameter" "userall-user-ssm-parameter" {
   name  = "userall.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"userall.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -343,7 +340,6 @@ resource "aws_ssm_parameter" "compwrite-user-ssm-parameter" {
   name  = "compwrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"compwrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -351,7 +347,6 @@ resource "aws_ssm_parameter" "gpowrite-user-ssm-parameter" {
   name  = "gpowrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"gpowrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -359,7 +354,6 @@ resource "aws_ssm_parameter" "lapsread-user-ssm-parameter" {
   name  = "lapsread.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"lapsread.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -367,7 +361,6 @@ resource "aws_ssm_parameter" "groupwrite-user-ssm-parameter" {
   name  = "groupwrite.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"groupwrite.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -375,7 +368,6 @@ resource "aws_ssm_parameter" "writedacldc-user-ssm-parameter" {
   name  = "writedacldc.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"writedacldc.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -383,7 +375,6 @@ resource "aws_ssm_parameter" "readgmsa-user-ssm-parameter" {
   name  = "readgmsa.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"readgmsa.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -391,7 +382,6 @@ resource "aws_ssm_parameter" "clearpass-user-ssm-parameter" {
   name  = "clearpass.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"clearpass.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -399,7 +389,6 @@ resource "aws_ssm_parameter" "dcsync-user-ssm-parameter" {
   name  = "dcsync.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"dcsync.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -407,7 +396,6 @@ resource "aws_ssm_parameter" "roast-user-ssm-parameter" {
   name  = "roast.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"roast.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -415,7 +403,6 @@ resource "aws_ssm_parameter" "asrep-user-ssm-parameter" {
   name  = "asrep.user"
   count = var.ENVIRONMENT == "deploy" ? 0 : 1
   type  = "SecureString"
-  overwrite = true
   value = "{\"Username\":\"asrep.user\", \"Password\":\"Password@1\"}"
 }
 
@@ -434,10 +421,6 @@ output "second-dc_ip" {
   description = "Public IP of Second-DC"
 }
 
-output "timestamp" {
-  value = formatdate("hh:mm", timestamp())
-}
-
 # Apply our DSC via SSM to first.local
 resource "aws_ssm_association" "first-dc" {
   name             = "AWS-ApplyDSCMofs"
@@ -449,7 +432,7 @@ resource "aws_ssm_association" "first-dc" {
   }
 
   parameters = {
-    MofsToApply    = "s3:${var.SSM_S3_BUCKET}:Lab/First.mof"
+    MofsToApply    = "s3:${aws_s3_bucket.ssm_bucket.id}:Lab/First.mof"
     RebootBehavior = "Immediately"
   }
 
@@ -467,7 +450,7 @@ resource "aws_ssm_association" "second-dc" {
   }
 
   parameters = {
-    MofsToApply    = "s3:${var.SSM_S3_BUCKET}:Lab/Second.mof"
+    MofsToApply    = "s3:${aws_s3_bucket.ssm_bucket.id}:Lab/Second.mof"
     RebootBehavior = "Immediately"
   }
 
@@ -485,7 +468,7 @@ resource "aws_ssm_association" "user-server" {
   }
 
   parameters = {
-    MofsToApply    = "s3:${var.SSM_S3_BUCKET}:Lab/UserServer.mof"
+    MofsToApply    = "s3:${aws_s3_bucket.ssm_bucket.id}:Lab/UserServer.mof"
     RebootBehavior = "Immediately"
   }
 
